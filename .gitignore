@@ -1,0 +1,14 @@
+# Runtime state — never commit; Railway keeps this on a mounted volume.
+data/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+
+# Generated
+preview.html
+
+node_modules/
+npm-debug.log*
+.DS_Store
+.env
+.env.*

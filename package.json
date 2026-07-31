@@ -1,0 +1,16 @@
+{
+  "name": "seasonaledge-market-impact",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MAGS Leadership Rotation Engine webhook receiver + public SPX leadership transmission dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/run.js",
+    "seed": "node test/seed.js"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {}
+}

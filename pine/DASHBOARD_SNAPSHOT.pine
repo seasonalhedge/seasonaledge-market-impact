@@ -1,0 +1,121 @@
+//@version=6
+// =============================================================================
+// MAGS Leadership Rotation Engine — DASHBOARD_SNAPSHOT emitter
+//
+// This is the one Pine addition needed for a complete seven-stock webpage.
+// Ordinary event alerts stay as they are: they feed the event history and
+// refresh whatever basket fields they carry. This snippet adds a single
+// alert fired once per confirmed daily close carrying ALL seven constituent
+// rows plus the complete basket state, so the dashboard can be reconstructed
+// from one payload instead of accumulated fragments.
+//
+// Drop the helper + the alert() call into your existing indicator. Every
+// variable referenced below (score_MSFT, state_AMZN, spxHealth, ...) should be
+// pointed at the equivalent series already computed in the engine.
+// =============================================================================
+
+// ---------------------------------------------------------------- helpers ---
+
+// JSON number with fixed precision; na is emitted as null so the receiver can
+// distinguish "not computed" from "zero".
+jnum(float v, int dp) =>
+    na(v) ? "null" : str.tostring(v, dp == 0 ? "#" : "#." + str.repeat("#", dp))
+
+jstr(string v) =>
+    na(v) ? "null" : "\"" + str.replace_all(v, "\"", "'") + "\""
+
+// One constituent object. `state` must be one of:
+//   LEADER | ACCUM | NEUTRAL | DIST | FUNDING
+// `flow` must be one of: ENTERING | LEAVING | FLAT
+constituentJson(string ticker, int rank, float score, string state,
+                float d5, float d20, int rankChg5, int bars,
+                float velocity, string flow, float risk) =>
+    '{"ticker":' + jstr(ticker) +
+      ',"rank":' + str.tostring(rank) +
+      ',"score":' + jnum(score, 1) +
+      ',"state":' + jstr(state) +
+      ',"delta_5":' + jnum(d5, 1) +
+      ',"delta_20":' + jnum(d20, 1) +
+      ',"rank_change_5":' + str.tostring(rankChg5) +
+      ',"persistence_bars":' + str.tostring(bars) +
+      ',"velocity":' + jnum(velocity, 1) +
+      ',"flow":' + jstr(flow) +
+      ',"risk":' + jnum(risk, 1) + '}'
+
+// ------------------------------------------------------------- inputs -------
+
+webhookToken = input.string("", "Webhook token", confirm = false,
+     tooltip = "Shared secret. Must match WEBHOOK_TOKEN on the receiver.")
+proxySymbol  = input.string("AMEX:SPY", "Return proxy symbol")
+emitSnapshot = input.bool(true, "Emit DASHBOARD_SNAPSHOT at confirmed close")
+
+// ------------------------------------------------ snapshot assembly ---------
+// Replace the placeholder identifiers below with the engine's live series.
+
+rowsJson =
+     constituentJson("MSFT",  rank_MSFT,  score_MSFT,  state_MSFT,  d5_MSFT,  d20_MSFT,  rankChg_MSFT,  bars_MSFT,  vel_MSFT,  flow_MSFT,  risk_MSFT)  + "," +
+     constituentJson("META",  rank_META,  score_META,  state_META,  d5_META,  d20_META,  rankChg_META,  bars_META,  vel_META,  flow_META,  risk_META)  + "," +
+     constituentJson("AAPL",  rank_AAPL,  score_AAPL,  state_AAPL,  d5_AAPL,  d20_AAPL,  rankChg_AAPL,  bars_AAPL,  vel_AAPL,  flow_AAPL,  risk_AAPL)  + "," +
+     constituentJson("AMZN",  rank_AMZN,  score_AMZN,  state_AMZN,  d5_AMZN,  d20_AMZN,  rankChg_AMZN,  bars_AMZN,  vel_AMZN,  flow_AMZN,  risk_AMZN)  + "," +
+     constituentJson("GOOGL", rank_GOOGL, score_GOOGL, state_GOOGL, d5_GOOGL, d20_GOOGL, rankChg_GOOGL, bars_GOOGL, vel_GOOGL, flow_GOOGL, risk_GOOGL) + "," +
+     constituentJson("NVDA",  rank_NVDA,  score_NVDA,  state_NVDA,  d5_NVDA,  d20_NVDA,  rankChg_NVDA,  bars_NVDA,  vel_NVDA,  flow_NVDA,  risk_NVDA)  + "," +
+     constituentJson("TSLA",  rank_TSLA,  score_TSLA,  state_TSLA,  d5_TSLA,  d20_TSLA,  rankChg_TSLA,  bars_TSLA,  vel_TSLA,  flow_TSLA,  risk_TSLA)
+
+snapshotJson =
+     '{"event":"DASHBOARD_SNAPSHOT"' +
+      ',"token":' + jstr(webhookToken) +
+      ',"time":"' + str.format_time(time_close, "yyyy-MM-dd'T'HH:mm:ssZ", "America/New_York") + '"' +
+      ',"timeframe":"1D"' +
+      ',"confirmed":true' +
+      ',"proxy_symbol":' + jstr(proxySymbol) +
+      // ---- market / attribution (raw, unrounded where possible) ------------
+      ',"spy_return":' + jnum(spyReturnPct, 4) +
+      ',"mag7_contribution_points":' + jnum(mag7ContribPoints, 4) +
+      ',"residual_contribution_points":' + jnum(spyReturnPct - mag7ContribPoints, 4) +
+      ',"mag7_impact_share":' + jnum(mag7ImpactShare, 4) +
+      ',"direction":' + jstr(impactDirection) +        // DRIVING | OFFSETTING | FLAT | N/A
+      ',"transmission":' + jstr(transmissionState) +   // BROAD | HEALTHY | CONCENTRATED | FRAGILE | BROKEN
+      // ---- leadership ------------------------------------------------------
+      ',"positive_count":' + str.tostring(positiveCount) +
+      ',"universe_count":7' +
+      ',"breadth_state":' + jstr(breadthState) +       // EXPANSIVE | STRONG | MODERATE | WEAK | CRITICAL
+      ',"breadth_trend":' + jstr(breadthTrend) +       // IMPROVING | STABLE | DETERIORATING
+      ',"diffusion":' + jnum(ldi, 4) +
+      ',"average_velocity":' + jnum(avgVelocity, 4) +
+      ',"rotation":' + jstr(rotationState) +
+      // ---- risk ------------------------------------------------------------
+      ',"spx_health":' + jnum(spxHealth, 2) +
+      ',"spx_health_state":' + jstr(spxHealthState) +
+      ',"structural_risk":' + jnum(structuralRisk, 2) +
+      ',"divergence_risk":' + jnum(divergenceRisk, 2) +
+      ',"funding_pressure":' + jnum(fundingPressure, 2) +
+      ',"index_risk":' + jnum(indexRisk, 2) +
+      ',"index_risk_state":' + jstr(indexRiskState) +
+      ',"tripwires":' + jstr(activeTripwires) +        // comma-separated, or "NONE"
+      // ---- constituents ----------------------------------------------------
+      ',"constituents":[' + rowsJson + ']}'
+
+// -------------------------------------------------------------- emission ----
+// barstate.isconfirmed guarantees one emission per closed daily bar.
+// Create the alert in TradingView with "Once per bar close" and leave the
+// message box set to {{strategy.order.alert_message}} / the alert() text.
+
+if emitSnapshot and timeframe.isdaily and barstate.isconfirmed
+    alert(snapshotJson, alert.freq_once_per_bar_close)
+
+// =============================================================================
+// ORDINARY EVENT PAYLOAD (unchanged shape, shown for reference)
+//
+// {"event":"NEW_LEADER","token":"...","time":"...","ticker":"AMZN",
+//  "state":"ACCUM","score":74.5,"delta_5":42.5,"delta_20":10.5,
+//  "rank":1,"rank_change_5":4,"persistence_bars":1,"velocity":31.1,
+//  "flow":"ENTERING","risk":9.5,
+//  "spy_return":0.58,"mag7_contribution_points":0.62,
+//  "mag7_impact_share":93.3,"transmission":"CONCENTRATED",
+//  "spx_health":46.8,"index_risk":52.5,"index_risk_state":"ELEVATED"}
+//
+// Event names the dashboard understands out of the box:
+//   TRANSMISSION_CONCENTRATED  TRANSMISSION_OFFSETTING  SPX_HEALTH_FRAGILE
+//   INDEX_RISK_ELEVATED        BREADTH_DETERIORATING    NEW_LEADER
+//   DISTRIBUTION               FUNDING_SOURCE           DASHBOARD_SNAPSHOT
+// =============================================================================

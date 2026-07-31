@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SeasonalEDGE Market Impact — SPX Leadership Transmission</title>
+<meta name="description" content="How much of today's SPX movement is coming from the MAG7, and whether index leadership is broad or concentrated.">
+<meta name="theme-color" content="#04060a">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ============================================================== FX LAYERS -->
+<div class="fx" aria-hidden="true">
+  <div class="aurora">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+    <span class="blob b4"></span><span class="blob b5"></span><span class="blob b6"></span>
+  </div>
+  <div class="fx__grid"></div>
+  <canvas class="fx__canvas" id="fx-canvas"></canvas>
+  <div class="fx__spotlight"></div>
+  <div class="fx__scan"></div>
+  <div class="fx__vignette"></div>
+</div>
+
+<div class="shell">
+
+<header class="masthead" role="banner" data-depth="0.6">
+  <div class="masthead__brand">
+    <p class="masthead__wordmark">
+      <span class="masthead__mark" aria-hidden="true"></span>
+      SeasonalEDGE <em>Market Impact</em>
+    </p>
+    <h1 class="masthead__title">SPX Leadership Transmission</h1>
+  </div>
+
+  <dl class="masthead__meta">
+    <div class="meta-item">
+      <dt>Data</dt>
+      <dd><span id="data-status" class="status-pill" data-status="">—</span></dd>
+    </div>
+    <div class="meta-item">
+      <dt>Session</dt>
+      <dd class="mono" id="session-clock">—</dd>
+    </div>
+    <div class="meta-item">
+      <dt>Last update</dt>
+      <dd class="mono" id="last-update">—</dd>
+    </div>
+    <div class="meta-item">
+      <dt>Timeframe</dt>
+      <dd class="mono" id="timeframe">—</dd>
+    </div>
+    <div class="meta-item">
+      <dt>Proxy</dt>
+      <dd class="mono" id="proxy-symbol">—</dd>
+    </div>
+  </dl>
+</header>
+
+<nav class="tabs" aria-label="Dashboard views">
+  <button type="button" class="tab" role="tab" aria-selected="true" aria-controls="panel-public" id="tab-public"><span>Market Impact</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="panel-pro" id="tab-pro"><span>Professional</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="panel-rotation" id="tab-rotation"><span>Rotation</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="panel-events" id="tab-events"><span>Events</span></button>
+  <button type="button" class="tab" role="tab" aria-selected="false" aria-controls="panel-json" id="tab-json"><span>Developer</span></button>
+</nav>
+
+<main id="main">
+
+  <!-- ============================================ 2. PUBLIC MARKET-IMPACT HERO -->
+  <section id="panel-public" class="panel" role="tabpanel" aria-labelledby="tab-public">
+
+    <section class="hero glass" aria-labelledby="hero-statement" data-depth="1.4" data-node="core">
+      <div class="hero__rule" aria-hidden="true"></div>
+      <p class="hero__eyebrow">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        Today’s index attribution
+      </p>
+      <h2 class="hero__statement" id="hero-statement">Awaiting data…</h2>
+      <p class="hero__support" id="hero-support"></p>
+
+      <ul class="hero__figures" aria-label="Attribution figures">
+        <li class="figure">
+          <span class="figure__label">SPY</span>
+          <span class="figure__value mono roll-target" id="fig-spy">—</span>
+        </li>
+        <li class="figure figure--accent">
+          <span class="figure__label">MAG7 contribution</span>
+          <span class="figure__value mono roll-target" id="fig-mag7">—</span>
+        </li>
+        <li class="figure">
+          <span class="figure__label">Rest of SPX</span>
+          <span class="figure__value mono roll-target" id="fig-residual">—</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ================================================ 3. ATTRIBUTION EQUATION -->
+    <section class="card glass" aria-labelledby="eq-heading" data-depth="1">
+      <h3 class="card__heading" id="eq-heading">Attribution equation</h3>
+      <p class="equation-caption">MAG7 contribution + Residual SPX contribution = SPY return</p>
+      <p class="equation mono roll-target" id="equation">—</p>
+      <p class="card__note">Contributions are expressed in SPX percentage points. Impact share is computed from raw engine values, not from the rounded figures shown above.</p>
+    </section>
+
+    <!-- ================================================ 4. IMPACT ATTRIBUTION BAR -->
+    <section class="card glass" aria-labelledby="bar-heading" data-depth="1">
+      <div class="card__header">
+        <h3 class="card__heading" id="bar-heading">Share of gross index movement</h3>
+        <span class="direction-pill" id="direction-pill" data-direction="">—</span>
+      </div>
+
+      <div class="attribution-bar" id="attribution-bar" role="img" aria-label="Share of gross index movement" aria-describedby="bar-legend">
+        <div class="attribution-bar__segment attribution-bar__segment--mag7" id="seg-mag7" data-node="mag7">
+          <span class="attribution-bar__value mono" id="seg-mag7-value"></span>
+        </div>
+        <div class="attribution-bar__segment attribution-bar__segment--residual" id="seg-residual">
+          <span class="attribution-bar__value mono" id="seg-residual-value"></span>
+        </div>
+      </div>
+
+      <ul class="legend" id="bar-legend">
+        <li><span class="legend__swatch legend__swatch--mag7"></span>MAG7 <strong class="mono roll-target" id="legend-mag7">—</strong></li>
+        <li><span class="legend__swatch legend__swatch--residual"></span>Rest of SPX <strong class="mono roll-target" id="legend-residual">—</strong></li>
+      </ul>
+    </section>
+
+    <div class="grid-2">
+      <!-- ================================================== 5. LEADERSHIP BREADTH -->
+      <section class="card glass" aria-labelledby="breadth-heading" data-depth="1.2">
+        <h3 class="card__heading" id="breadth-heading">Leadership breadth</h3>
+        <p class="breadth__count">Healthy Leadership <strong class="mono roll-target" id="breadth-count">—</strong></p>
+
+        <ul class="constituent-cells" id="constituent-cells" aria-label="MAG7 leadership states"></ul>
+
+        <p class="breadth__line">Positive <span id="breadth-positive" class="mono">—</span></p>
+        <p class="breadth__line">Breadth State <span class="badge" id="breadth-state" data-breadth="">—</span></p>
+      </section>
+
+      <!-- ==================================================== 6. TRANSMISSION STATE -->
+      <section class="card glass card--transmission" aria-labelledby="transmission-heading" data-depth="1.2">
+        <h3 class="card__heading" id="transmission-heading">Transmission</h3>
+        <p class="transmission__value" id="transmission-value" data-transmission="">—</p>
+        <div class="transmission__meter" aria-hidden="true"><span id="transmission-meter-fill"></span></div>
+        <p class="transmission__definition" id="transmission-definition">—</p>
+      </section>
+    </div>
+
+    <!-- ========================================== 7. PLAIN-ENGLISH INTERPRETATION -->
+    <section class="card glass card--interpretation" aria-labelledby="interp-heading" data-depth="0.8">
+      <h3 class="card__heading" id="interp-heading">What this means</h3>
+      <p class="interpretation" id="interpretation">—</p>
+    </section>
+
+    <p class="confirmation-note" id="confirmation-note"></p>
+  </section>
+
+  <!-- ============================================== 8. PROFESSIONAL VIEW -->
+  <section id="panel-pro" class="panel" role="tabpanel" aria-labelledby="tab-pro" hidden>
+    <section class="card glass" aria-labelledby="pro-heading" data-depth="1">
+      <h3 class="card__heading" id="pro-heading">Structural diagnostics</h3>
+      <dl class="metric-grid" id="metric-grid"></dl>
+    </section>
+
+    <section class="card glass" aria-labelledby="tripwire-heading" data-depth="0.8">
+      <h3 class="card__heading" id="tripwire-heading">Active tripwires</h3>
+      <ul class="tripwires" id="tripwires"></ul>
+    </section>
+
+    <details class="card glass card--details" data-depth="0.6">
+      <summary>Scoring reference</summary>
+      <ul class="reference-list">
+        <li><strong>SPX Health</strong> — composite index-support score. Lower readings indicate deteriorating internal support.</li>
+        <li><strong>Index Risk</strong> — aggregate structural exposure carried by the index.</li>
+        <li><strong>Structural Risk</strong> — concentration and dependency risk inside the leadership set.</li>
+        <li><strong>Divergence Risk</strong> — degree to which price and leadership internals disagree.</li>
+        <li><strong>Funding Pressure</strong> — capital rotating out of constituents to fund positions elsewhere.</li>
+        <li><strong>Leadership Diffusion Index</strong> — spread of leadership across the universe. Negative readings mean leadership is narrowing.</li>
+        <li><strong>Average Velocity</strong> — mean rate of change of leadership scores across the universe.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ========================================= 9. CONSTITUENT ROTATION TABLE -->
+  <section id="panel-rotation" class="panel" role="tabpanel" aria-labelledby="tab-rotation" hidden>
+    <section class="card glass" aria-labelledby="rotation-heading" data-depth="1">
+      <div class="card__header">
+        <h3 class="card__heading" id="rotation-heading">Constituent rotation</h3>
+        <span class="coverage-note mono" id="coverage-note"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <caption class="visually-hidden">MAG7 constituents sorted by leadership score, descending</caption>
+          <thead>
+            <tr>
+              <th scope="col">Rank</th>
+              <th scope="col">Ticker</th>
+              <th scope="col" class="num">Score</th>
+              <th scope="col">State</th>
+              <th scope="col" class="num">Δ5D</th>
+              <th scope="col" class="num">Δ20D</th>
+              <th scope="col" class="num">Rank Δ5D</th>
+              <th scope="col" class="num">Bars</th>
+              <th scope="col" class="num">Velocity</th>
+              <th scope="col">Flow</th>
+              <th scope="col" class="num">Risk</th>
+            </tr>
+          </thead>
+          <tbody id="rotation-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+
+  <!-- ================================================== 10. EVENT HISTORY -->
+  <section id="panel-events" class="panel" role="tabpanel" aria-labelledby="tab-events" hidden>
+    <section class="card glass" aria-labelledby="events-heading" data-depth="1">
+      <h3 class="card__heading" id="events-heading">Latest 25 events</h3>
+      <div class="table-scroll">
+        <table class="data-table">
+          <caption class="visually-hidden">Most recent webhook events, newest first</caption>
+          <thead>
+            <tr>
+              <th scope="col">Time</th>
+              <th scope="col">Event</th>
+              <th scope="col">Subject</th>
+              <th scope="col">State</th>
+              <th scope="col" class="num">Score</th>
+              <th scope="col">Transmission</th>
+              <th scope="col" class="num">Index Risk</th>
+            </tr>
+          </thead>
+          <tbody id="events-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+
+  <!-- ==================================================== 11. RAW JSON VIEW -->
+  <section id="panel-json" class="panel" role="tabpanel" aria-labelledby="tab-json" hidden>
+    <section class="card glass" aria-labelledby="json-heading" data-depth="1">
+      <div class="card__header">
+        <h3 class="card__heading" id="json-heading">Normalized dashboard state</h3>
+        <button type="button" class="button" id="copy-json">Copy JSON</button>
+      </div>
+      <pre class="json-view"><code id="json-view">—</code></pre>
+    </section>
+  </section>
+
+</main>
+
+<footer class="colophon" data-depth="0.4">
+  <p>SeasonalEDGE Market Impact · MAGS Leadership Rotation Engine · Attribution is proxy-based and for informational purposes only. Not investment advice.</p>
+  <p class="colophon__conn mono">
+    <span class="conn-led" id="conn-led" aria-hidden="true"></span>
+    <span id="conn-state">connecting…</span>
+  </p>
+</footer>
+
+</div><!-- /.shell -->
+
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
