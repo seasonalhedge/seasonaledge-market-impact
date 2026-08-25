@@ -29,12 +29,12 @@ Don't reuse a password, and don't commit it.
 
 ## 2. Push to GitHub
 
-From this folder:
+The repo is already initialised with a first commit. From this folder:
 
 ```bash
-git init
-git add .
-git commit -m "SeasonalEDGE Market Impact — MAGS LRE dashboard"
+rm -f .git/index.lock          # sandbox left a stale lock; harmless to remove
+git add -A
+git commit -m "Railway deploy config, webhook throttle, basket-event fix"
 git branch -M main
 git remote add origin https://github.com/seasonalhedge/seasonaledge-market-impact.git
 git push -u origin main

@@ -218,6 +218,24 @@ test('event payloads preserve the latest known row per ticker', () => {
   assert.strictEqual(state.constituents.AMZN.risk, 9.5, 'risk should survive the partial update');
 });
 
+test('basket-level events do not become phantom constituents', () => {
+  let state = N.emptyState();
+  for (const e of events()) {
+    state = N.applyToState(state, N.parsePayload(e).parsed);
+  }
+  const tickers = Object.keys(state.constituents);
+  assert.ok(!tickers.includes('MAG7'), 'basket subject leaked into constituents');
+  for (const t of tickers) {
+    assert.ok(
+      ['MSFT', 'META', 'AAPL', 'AMZN', 'GOOGL', 'NVDA', 'TSLA'].includes(t),
+      `unexpected constituent ${t}`
+    );
+  }
+  // The basket fields those events carried must still have been applied.
+  assert.strictEqual(state.risk.spx_health, 46.8);
+  assert.strictEqual(state.leadership.positive_count, 1);
+});
+
 test('dashboard reproduces the worked example end to end', () => {
   const state = N.applyToState(N.emptyState(), N.parsePayload(snapshot()).parsed);
   const d = N.buildDashboard(state, []);
