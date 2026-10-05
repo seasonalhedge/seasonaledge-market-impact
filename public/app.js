@@ -115,6 +115,7 @@
     NEGATIVE_DIFFUSION: ['Negative diffusion', 'caution', 'Leadership is concentrating rather than spreading.'],
     BREADTH_DETERIORATING: ['Breadth deteriorating', 'caution', 'Participation inside MAG7 is thinning.'],
     DASHBOARD_SNAPSHOT: ['Daily snapshot', 'info', 'Full end-of-session state for all seven constituents.'],
+    DAILY_CLOSE: ['Daily close reading', 'info', 'End-of-session attribution, internals and 493 confirmation.'],
   };
 
   var TRIPWIRE_NOTES = {
