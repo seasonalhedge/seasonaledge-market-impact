@@ -310,9 +310,28 @@
 
   var last = 0;
 
+  /**
+   * Measure the content, not the document.
+   *
+   * documentElement.scrollHeight is at least the height of the frame we are
+   * sitting in, so reporting it makes the iframe a ratchet: it can grow but
+   * never shrink, and a tall fallback height locks in forever. The shell is
+   * the real content box, so measure that and add the body's bottom padding
+   * back on.
+   */
+  function contentHeight() {
+    var shell = document.querySelector('.shell');
+    if (!shell) {
+      return Math.max(document.documentElement.scrollHeight,
+                      document.body ? document.body.scrollHeight : 0);
+    }
+    var rect = shell.getBoundingClientRect();
+    var top = rect.top + (window.scrollY || 0);
+    return Math.ceil(top + rect.height);
+  }
+
   function report() {
-    var doc = document.documentElement;
-    var h = Math.max(doc.scrollHeight, document.body ? document.body.scrollHeight : 0);
+    var h = contentHeight();
     if (!h || Math.abs(h - last) < 24) return;     // ignore sub-pixel jitter
     last = h;
     try {
