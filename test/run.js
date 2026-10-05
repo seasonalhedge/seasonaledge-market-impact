@@ -277,6 +277,127 @@ test('data status reports STALE / CLOSED appropriately', () => {
   assert.strictEqual(N.computeDataStatus(new Date('2026-07-31T20:00:00Z').toISOString(), weekend), 'CLOSED');
 });
 
+test('daily timeframe: CONFIRMED through the next session, STALE once a close is missed', () => {
+  // Alert at Friday 16:01 ET (20:01Z, EDT).
+  const fridayClose = '2026-10-02T20:01:00Z';
+  // Monday 13:47 ET — still the most recent close.
+  assert.strictEqual(N.computeDataStatus(fridayClose, new Date('2026-10-05T17:47:00Z'), '1D'), 'CONFIRMED');
+  // Saturday — still current.
+  assert.strictEqual(N.computeDataStatus(fridayClose, new Date('2026-10-03T15:00:00Z'), '1D'), 'CONFIRMED');
+  // Monday 16:30 ET — Monday's close has passed without a new reading.
+  assert.strictEqual(N.computeDataStatus(fridayClose, new Date('2026-10-05T20:30:00Z'), '1D'), 'STALE');
+  // Nothing ever received.
+  assert.strictEqual(N.computeDataStatus(null, new Date('2026-10-05T17:47:00Z'), '1D'), 'STALE');
+});
+
+/* --------------------------------------------- unit: real engine payloads */
+
+console.log('\nreal MAGS LRE payloads');
+
+// Verbatim shape of a live alert captured from TradingView (BREADTH_DETERIORATING).
+const liveEngineEvent = () => ({
+  system: 'SeasonalEDGE',
+  indicator: 'MAGS Leadership Rotation Engine + SPX Health Transmission Gauge',
+  version: '1.2.0',
+  event: 'BREADTH_DETERIORATING',
+  ticker: 'BASKET',
+  benchmark: 'NASDAQ:MAGS',
+  timeframe: '1D',
+  score: 46.0714,
+  state: 'CRITICAL',
+  delta_5: -1.8571,
+  delta_20: 0.8571,
+  rank: 0,
+  rank_change: 0,
+  persistence_bars: 0,
+  velocity: -0.0214,
+  ldi: -0.5714,
+  leadership_breadth: 1,
+  funding_pressure: 55.1692,
+  structural_risk: 50.9566,
+  divergence_risk: 40,
+  spx_health: 45.1425,
+  spx_health_state: 'FRAGILE',
+  mag7_contribution_points: -0.0473,
+  mag7_impact_share: 40.4915,
+  mag7_direction: 'OFFSETTING',
+  transmission: 'BROADENING',
+  index_risk: 50.2411,
+  index_risk_state: 'ELEVATED',
+  bar_time: 1787751000000,
+});
+
+test('live engine event: share, direction, breadth and transmission all land', () => {
+  const r = N.parsePayload(liveEngineEvent());
+  assert.ok(r.ok, JSON.stringify(r.errors));
+  const d = N.buildDashboard(N.applyToState(N.emptyState(), r.parsed), []);
+  assert.strictEqual(d.market.mag7_impact_share, 40.5);
+  assert.strictEqual(d.market.mode, 'ENGINE_SHARE');
+  assert.strictEqual(d.market.reliable, true);
+  assert.strictEqual(d.market.direction, 'OFFSETTING');
+  assert.strictEqual(d.market.transmission, 'BROADENING');
+  assert.strictEqual(d.market.spy_return, null);          // never invented
+  assert.strictEqual(d.market.residual_contribution_points, null);
+  assert.strictEqual(d.leadership.positive_count, 1);
+  assert.strictEqual(d.leadership.diffusion, -0.57);
+  assert.strictEqual(d.leadership.breadth_state, 'CRITICAL');   // regime word from "state"
+  assert.strictEqual(d.confirmed, true);                  // bar_time => confirmed bar
+  assert.strictEqual(d.constituents.length, 0);           // BASKET is not a stock
+  assert.deepStrictEqual(d.engine, {
+    name: 'MAGS Leadership Rotation Engine + SPX Health Transmission Gauge',
+    version: '1.2.0',
+  });
+});
+
+test('facade event: the 493 confirmation layer is captured, SPY derived from its parts', () => {
+  const r = N.parsePayload({
+    event: 'MAGS_FACADE',
+    bar_time: 1787751000000,
+    timeframe: '1D',
+    mag7ContributionPoints: 0.41,
+    residualSpxContributionPoints: 0.19,
+    mag7ImpactShare: 68.3,
+    magsDirectionalBreadthCount: 6,
+    positiveBreadthCount: 3,
+    exMagsBreadthPercent: 49.5,
+    equalWeightReturnOne: 0.5,
+    capEqualSpread: 0.1,
+    exMagsStance: 'confirming',
+    mismatchState: 'broad confirmation',
+    facadePersistenceBars: 0,
+  });
+  assert.ok(r.ok, JSON.stringify(r.errors));
+  const d = N.buildDashboard(N.applyToState(N.emptyState(), r.parsed), []);
+  assert.strictEqual(d.market.spy_return, 0.6);
+  assert.strictEqual(d.market.mode, 'FULL');
+  assert.strictEqual(d.confirmation.ex_mags_breadth, 49.5);
+  assert.strictEqual(d.confirmation.equal_weight_return, 0.5);
+  assert.strictEqual(d.confirmation.cap_equal_spread, 0.1);
+  assert.strictEqual(d.confirmation.ex_mags_stance, 'CONFIRMING');
+  assert.strictEqual(d.confirmation.mismatch_state, 'BROAD CONFIRMATION');
+  assert.strictEqual(d.confirmation.mags_day_breadth, 6);
+  assert.strictEqual(d.leadership.positive_count, 3);
+});
+
+test('confirmation survives later events that omit it', () => {
+  const state = N.emptyState();
+  N.applyToState(state, N.parsePayload({ event: 'MAGS_FACADE', exMagsBreadthPercent: 49.5 }).parsed);
+  N.applyToState(state, N.parsePayload(liveEngineEvent()).parsed);
+  assert.strictEqual(N.buildDashboard(state, []).confirmation.ex_mags_breadth, 49.5);
+});
+
+test('state persisted before the confirmation block still loads', () => {
+  const legacy = N.emptyState();
+  delete legacy.confirmation;
+  const d = N.buildDashboard(N.applyToState(legacy, N.parsePayload(liveEngineEvent()).parsed), []);
+  assert.strictEqual(d.confirmation.ex_mags_breadth, null);
+});
+
+test('no data means no transmission call, not a default HEALTHY', () => {
+  const d = N.buildDashboard(N.emptyState(), []);
+  assert.strictEqual(d.market.transmission, null);
+});
+
 /* ---------------------------------------------------------- unit: store */
 
 console.log('\nstorage');
@@ -391,7 +512,7 @@ function post(payload, headers) {
     assert.strictEqual(d.market.transmission, 'CONCENTRATED');
     assert.strictEqual(d.leadership.positive_count, 1);
     assert.strictEqual(d.constituents.length, 7);
-    assert.ok(['LIVE', 'DELAYED', 'STALE', 'CLOSED'].includes(d.data_status));
+    assert.ok(['LIVE', 'DELAYED', 'STALE', 'CLOSED', 'CONFIRMED'].includes(d.data_status));
   });
 
   await testAsync('GET /events honours and clamps limit', async () => {
