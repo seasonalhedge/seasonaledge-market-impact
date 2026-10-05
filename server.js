@@ -48,6 +48,15 @@ if (store.kind === 'json' && process.env.STORE !== 'json') {
 
 /* ------------------------------------------------------------------ helpers */
 
+/**
+ * Who may frame the dashboard. The marketing site embeds it under LEADERSHIP;
+ * 'self' keeps impact.seasonaledge.ai able to frame its own pages. Anything
+ * not on this list gets refused by the browser, which is the clickjacking
+ * guard X-Frame-Options used to provide.
+ */
+const FRAME_ANCESTORS =
+  "frame-ancestors 'self' https://seasonaledge.ai https://*.seasonaledge.ai";
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -281,6 +290,11 @@ function serveStatic(req, res, url) {
       'Content-Length': data.length,
       'Cache-Control': 'no-cache',
       'X-Content-Type-Options': 'nosniff',
+      // The dashboard is embedded in the LEADERSHIP section of the marketing
+      // site, so seasonaledge.ai (and its subdomains) may frame it. Everyone
+      // else may not — frame-ancestors is the modern replacement for
+      // X-Frame-Options and understands a host list.
+      'Content-Security-Policy': FRAME_ANCESTORS,
     });
     res.end(data);
   });
@@ -291,6 +305,23 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (url.pathname === '/webhook/mags-lre') return await handleWebhook(req, res, url);
+
+    // Read-only API is CORS-open so the standalone single-file build of the
+    // dashboard can be opened from anywhere (file://, another host, an embed)
+    // and still read live state. The webhook POST above is deliberately
+    // excluded — it is token-authenticated and never called from a browser.
+    if (url.pathname.startsWith('/api/mags-lre/')) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Max-Age', '86400');
+      res.setHeader('Vary', 'Origin');
+
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        return res.end();
+      }
+    }
 
     if (url.pathname === '/api/mags-lre/latest') {
       return sendJson(res, 200, currentDashboard());
