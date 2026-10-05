@@ -295,5 +295,45 @@
 
 <script src="engine.js"></script>
 <script src="app.js"></script>
+
+<script>
+/* ---------------------------------------------------------- embed height ---
+   When framed, report our content height to the host page so the iframe can
+   size itself instead of guessing. Switching tabs changes the height a lot,
+   so this watches the document rather than firing once.
+
+   The host listens for { type: 'se-impact-height' }. A host that does not
+   listen simply ignores the messages and keeps its fallback height.
+   --------------------------------------------------------------------------*/
+(function () {
+  if (window.parent === window) return;            // not framed, nothing to do
+
+  var last = 0;
+
+  function report() {
+    var doc = document.documentElement;
+    var h = Math.max(doc.scrollHeight, document.body ? document.body.scrollHeight : 0);
+    if (!h || Math.abs(h - last) < 24) return;     // ignore sub-pixel jitter
+    last = h;
+    try {
+      // Targeted origin: the dashboard is only ever framed by the marketing
+      // site, and a wildcard would leak layout size to any embedder.
+      window.parent.postMessage({ type: 'se-impact-height', height: h }, 'https://www.seasonaledge.ai');
+      window.parent.postMessage({ type: 'se-impact-height', height: h }, 'https://seasonaledge.ai');
+    } catch (err) {
+      /* a host that refuses the message just keeps its fallback height */
+    }
+  }
+
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(report).observe(document.documentElement);
+  }
+  window.addEventListener('load', report);
+  window.addEventListener('resize', report, { passive: true });
+  document.addEventListener('click', function () { setTimeout(report, 350); }, true);
+  setInterval(report, 2000);
+  report();
+})();
+</script>
 </body>
 </html>
