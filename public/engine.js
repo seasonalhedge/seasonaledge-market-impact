@@ -36,16 +36,62 @@
     intensity: 0.4,        // 0–1, driven by MAG7 impact share
     direction: 'N/A',
     transmission: null,
-    // Command Core tokens: MAG7 capital rides --info blue, the rest of the
-    // index rides --spx orange. Same vocabulary as the Command Core dashboard.
-    accent: [107, 183, 255],
-    residual: [255, 138, 76],
+    // Brand season palette: MAG7 capital rides winter (#60A5FA), the rest of
+    // the index rides fall (#F97316). Read off the stylesheet at boot so the
+    // canvas and the CSS can never drift apart.
+    accent: [96, 165, 250],
+    residual: [249, 115, 22],
   };
 
   var pointer = { x: 0.5, y: 0.35, tx: 0.5, ty: 0.35 };
   var running = false;
   var lastT = 0;
   var nodeRefreshT = 0;
+
+  /* ---------------------------------------------------------- brand tokens */
+
+  /**
+   * Resolve a CSS custom property to an [r,g,b] triple.
+   * Accepts "#RGB", "#RRGGBB" and "r g b" / "r, g, b" forms, so the same reader
+   * works for --winter (#60A5FA) and for --info-rgb (96 165 250).
+   */
+  function readRgbToken(name, fallback) {
+    try {
+      var raw = getComputedStyle(document.documentElement)
+        .getPropertyValue(name)
+        .trim();
+      if (!raw) return fallback;
+
+      if (raw.charAt(0) === '#') {
+        var hex = raw.slice(1);
+        if (hex.length === 3) {
+          hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        if (hex.length < 6) return fallback;
+        var n = parseInt(hex.slice(0, 6), 16);
+        if (!isFinite(n)) return fallback;
+        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      }
+
+      var parts = raw.split(/[\s,]+/).filter(Boolean).map(Number);
+      if (parts.length >= 3 && parts.every(function (v) { return isFinite(v); })) {
+        return [parts[0], parts[1], parts[2]];
+      }
+    } catch (err) {
+      /* fall through to the baked-in brand values */
+    }
+    return fallback;
+  }
+
+  /**
+   * Pull the capital colours off the stylesheet so the canvas always matches
+   * the brand tokens. If the sheet has not parsed yet the baked season values
+   * stand in — they are the same colours, so a miss is invisible.
+   */
+  function syncBrandTokens() {
+    state.accent = readRgbToken('--color-mag7', state.accent);
+    state.residual = readRgbToken('--color-residual', state.residual);
+  }
 
   /* --------------------------------------------------------------- sprites */
 
@@ -474,6 +520,8 @@
     }
     ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
+
+    syncBrandTokens();
 
     spriteAccent = makeSprite(state.accent, 64);
     spriteResidual = makeSprite(state.residual, 64);

@@ -1,51 +1,64 @@
 /* =============================================================================
    SeasonalEDGE Market Impact — presentation layer
 
-   Design system lifted directly from the SeasonalEDGE Command Core dashboard
-   (seasonalhedge.github.io/seasonaledge-data): paper/ink scale, the on/neu/off/
-   info/spx signal tokens, and the Fraunces + Space Grotesk + JetBrains Mono
-   trio. Token names match the Command Core so the two surfaces stay in sync.
+   Branded to the SeasonalEDGE Portfolio Solutions v11 HTML & Brand Guide:
+   brass-on-obsidian, Archivo + IBM Plex Mono, the season palette as the state
+   encoding. Brass (#B2894A) is an instrument finish — it appears on The Turn
+   and on deliberate accents, never as a fill or a background.
 
-   Local additions are marked. Every value is a custom property — nothing below
-   the :root block hard-codes a colour.
+   Every value below the :root block is a custom property — nothing hard-codes
+   a colour, so the whole surface re-skins from the token core alone.
    ========================================================================== */
 
 :root {
-  /* --- paper (Command Core, deepened) -------------------------------------- */
-  /* Command Core ships #04060a / #080b11 / #0c1018. Run one stop darker here so
-     the aurora and the capital field read against a blacker ground. */
-  --paper:    #010203;
-  --paper-2:  #04060b;
-  --paper-3:  #070a11;
+  /* --- obsidian ground (brand: --ob / --panel / --panel2) ------------------ */
+  /* The guide ships #0B0B0C / #121214 / #171719. Run the ground one stop under
+     obsidian so the capital field and the aurora read against a blacker base
+     and the panels still lift off it. */
+  --paper:    #070708;
+  --paper-2:  #121214;
+  --paper-3:  #171719;
 
-  /* --- ink (Command Core) -------------------------------------------------- */
-  --ink:      #ecf1f7;
-  --ink-2:    #99a8bc;
-  --ink-3:    #4f5d74;
+  /* --- paper ink (brand: --paper / body / --graphite) ---------------------- */
+  --ink:      #F6F4EF;
+  --ink-2:    #B4B2AC;
+  --ink-3:    #77787C;
 
-  --rule:     rgb(153 168 188 / 0.13);
-  --rule-2:   rgb(153 168 188 / 0.24);
-  --rule-rgb: 153 168 188;
+  --rule:     rgb(246 244 239 / 0.10);
+  --rule-2:   rgb(246 244 239 / 0.22);
+  --rule-rgb: 246 244 239;
 
-  /* --- signal tokens (Command Core) --------------------------------------- */
-  --on:    #4dffb8;   /* mint   — positive */
-  --neu:   #ffb534;   /* amber  — neutral */
-  --off:   #ff4d7a;   /* rose   — negative */
-  --info:  #6bb7ff;   /* blue   — informational */
-  --spx:   #ff8a4c;   /* orange — SPX */
-  --posz:  #6b8bff;   /* periwinkle — positioning */
+  /* --- brass: the instrument finish ---------------------------------------- */
+  /* Reserved for The Turn, the live indicator, and the single accent rule on a
+     focused panel. Never a fill, never a background. */
+  --brass:     #B2894A;
+  --brass-dim: #7A5F33;
+  --brass-rgb: 178 137 74;
 
-  --on-rgb:   77 255 184;
-  --info-rgb: 107 183 255;
-  --spx-rgb:  255 138 76;
+  /* --- season palette, carrying the signal tokens -------------------------- */
+  --spring: #4ADE80;
+  --summer: #EAB308;
+  --fall:   #F97316;
+  --winter: #60A5FA;
 
-  /* --- type (Command Core) ------------------------------------------------- */
-  --serif: "Fraunces", Georgia, serif;
-  --sans:  "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --mono:  "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --on:    var(--spring);   /* positive / broad / leading */
+  --neu:   var(--summer);   /* neutral / watch */
+  --off:   #DC4A4A;         /* negative / broken — brand score-low */
+  --info:  var(--winter);   /* informational / MAG7 */
+  --spx:   var(--fall);     /* the index itself */
+  --posz:  var(--brass);    /* positioning */
+
+  --on-rgb:   74 222 128;
+  --info-rgb: 96 165 250;
+  --spx-rgb:  249 115 22;
+
+  /* --- type (brand guide) -------------------------------------------------- */
+  --serif: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --sans:  "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --mono:  "IBM Plex Mono", ui-monospace, Menlo, monospace;
 
   /* ------------------------------------------------------------------------ */
-  /* Local aliases: this dashboard's vocabulary mapped onto Command Core tokens */
+  /* Local aliases: this dashboard's vocabulary mapped onto the brand tokens   */
   /* ------------------------------------------------------------------------ */
 
   --color-void:            var(--paper);
@@ -60,11 +73,14 @@
   --color-text-muted:      var(--ink-2);
   --color-text-faint:      var(--ink-3);
 
-  /* MAG7 is the subject of this page, so it takes the informational blue;
-     the rest of the index takes the Command Core's own SPX orange. */
+  --color-accent:          var(--brass);
+  --color-accent-dim:      var(--brass-dim);
+
+  /* MAG7 is the subject of this page, so it takes winter blue; the rest of the
+     index takes fall orange. Two seasons, read against each other. */
   --color-capital:         var(--info);
-  --color-capital-hot:     #a8d6ff;
-  --color-capital-deep:    #2c6fb0;
+  --color-capital-hot:     #A8CEFB;
+  --color-capital-deep:    #2F6DA8;
   --capital-rgb:           var(--info-rgb);
   --color-mag7:            var(--info);
   --color-residual:        var(--spx);
@@ -104,14 +120,14 @@
   --color-down:            var(--off);
   --color-flat:            var(--ink-2);
 
-  /* glass composition — Command Core panel recipe */
+  /* glass composition — obsidian panels, paper-tinted edges */
   --glass-tint:            var(--rule-rgb);
-  --glass-fill:            0.02;
+  --glass-fill:            0.022;
   --glass-fill-raised:     0.05;
-  --glass-stroke:          0.24;
-  --glass-specular:        0.07;
+  --glass-stroke:          0.20;
+  --glass-specular:        0.06;
   --glass-blur:            14px;
-  --glass-saturate:        110%;
+  --glass-saturate:        106%;
 
   /* --- type scale ---------------------------------------------------------- */
   --font-display: var(--sans);
@@ -126,12 +142,15 @@
   --size-small:        0.8125rem;
   --size-micro:        0.6875rem;
 
+  /* Archivo cuts, per the brand guide type scale */
+  --weight-hair:    200;
   --weight-light:   300;
   --weight-regular: 400;
   --weight-medium:  500;
   --weight-bold:    600;
+  --weight-black:   800;
 
-  /* Command Core label tracking runs .16em–.26em */
+  /* Label tracking runs .16em–.26em */
   --tracking-base:  0.01em;
   --tracking-wide:  0.22em;
   --tracking-tight: -0.01em;
@@ -271,12 +290,16 @@ ul { list-style: none; padding: 0; }
   border-radius: 50%;
   mix-blend-mode: screen;
 }
-.aurora .b1 { width: 620px; height: 620px; background: var(--on);   top: -6%;    left: -6%;   opacity: 0.11; animation: drift 28s var(--ease-in-out) infinite alternate; }
-.aurora .b2 { width: 660px; height: 660px; background: var(--neu);  top: -4%;    right: -8%;  opacity: 0.085; animation: drift 33s var(--ease-in-out) infinite alternate-reverse; }
-.aurora .b3 { width: 560px; height: 560px; background: var(--off);  bottom: -8%; right: 6%;   opacity: 0.08; animation: drift 30s var(--ease-in-out) infinite alternate; }
-.aurora .b4 { width: 580px; height: 580px; background: var(--info); bottom: -8%; left: 4%;    opacity: 0.10; animation: drift 35s var(--ease-in-out) infinite alternate-reverse; }
-.aurora .b5 { width: 640px; height: 640px; background: var(--on);   top: 46%;    left: -10%;  opacity: 0.07; animation: drift 40s var(--ease-in-out) infinite alternate; }
-.aurora .b6 { width: 600px; height: 600px; background: var(--info); top: 72%;    right: -8%;  opacity: 0.07; animation: drift 44s var(--ease-in-out) infinite alternate-reverse; }
+/* The aurora runs the four seasons, in cycle order, drifting against each
+   other. Low opacity by design — on obsidian this reads as a tint in the room,
+   not as colour on the page. Brass is deliberately absent: the guide reserves
+   it for the mark and accents, never a fill or a background. */
+.aurora .b1 { width: 620px; height: 620px; background: var(--spring); top: -6%;    left: -6%;   opacity: 0.085; animation: drift 28s var(--ease-in-out) infinite alternate; }
+.aurora .b2 { width: 660px; height: 660px; background: var(--summer); top: -4%;    right: -8%;  opacity: 0.065; animation: drift 33s var(--ease-in-out) infinite alternate-reverse; }
+.aurora .b3 { width: 560px; height: 560px; background: var(--fall);   bottom: -8%; right: 6%;   opacity: 0.070; animation: drift 30s var(--ease-in-out) infinite alternate; }
+.aurora .b4 { width: 580px; height: 580px; background: var(--winter); bottom: -8%; left: 4%;    opacity: 0.085; animation: drift 35s var(--ease-in-out) infinite alternate-reverse; }
+.aurora .b5 { width: 640px; height: 640px; background: var(--spring); top: 46%;    left: -10%;  opacity: 0.055; animation: drift 40s var(--ease-in-out) infinite alternate; }
+.aurora .b6 { width: 600px; height: 600px; background: var(--winter); top: 72%;    right: -8%;  opacity: 0.060; animation: drift 44s var(--ease-in-out) infinite alternate-reverse; }
 
 @keyframes drift {
   0%   { transform: translate(0, 0) scale(1); }
@@ -444,17 +467,27 @@ main {
   text-transform: uppercase;
   color: var(--color-text);
 }
+/* Brand lockup: SEASONAL in the hairline cut, EDGE in the black cut. */
+.masthead__wordmark b {
+  font-weight: var(--weight-hair);
+  letter-spacing: var(--tracking-wide);
+}
+.masthead__wordmark b i {
+  font-style: normal;
+  font-weight: var(--weight-black);
+}
 .masthead__wordmark em {
   font-style: normal;
   font-weight: var(--weight-light);
   color: var(--color-capital);
 }
+/* The Turn, at masthead scale. The mark never rotates — the turn climbs level —
+   so the breath is carried on opacity alone. Paper arcs, brass crest. */
 .masthead__mark {
-  width: 9px; height: 9px;
-  background: var(--color-capital);
-  box-shadow: var(--glow-capital);
-  transform: rotate(45deg);
-  animation: breathe var(--breathe) var(--ease-in-out) infinite;
+  width: 30px; height: 30px;
+  flex: 0 0 auto;
+  color: var(--ink);
+  animation: breatheMark var(--breathe) var(--ease-in-out) infinite;
 }
 
 .masthead__title {
@@ -812,8 +845,8 @@ main {
 }
 .breadth__count strong {
   font-family: var(--serif);
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 200;
   font-size: var(--size-figure);
   color: var(--color-text);
   letter-spacing: var(--tracking-tight);
@@ -907,8 +940,8 @@ main {
 
 .transmission__value {
   font-family: var(--serif);
-  font-style: italic;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: 200;
   font-size: var(--size-transmission);
   letter-spacing: var(--tracking-tight);
   line-height: 1;
@@ -1233,6 +1266,12 @@ main {
   0%, 100% { opacity: 0.45; transform: scale(1) rotate(45deg); }
   50%      { opacity: 1;    transform: scale(1.12) rotate(45deg); }
 }
+/* The Turn breathes on opacity only — the brand guide forbids rotating the
+   mark, and scaling it would soften the 9-unit stroke at this size. */
+@keyframes breatheMark {
+  0%, 100% { opacity: 0.62; }
+  50%      { opacity: 1; }
+}
 .hero__rule { animation-name: breatheRule; }
 @keyframes breatheRule {
   0%, 100% { opacity: calc(0.25 + var(--intensity) * 0.4); }
@@ -1302,4 +1341,34 @@ main {
 /* Older browsers without backdrop-filter still get a solid, legible panel. */
 @supports not (backdrop-filter: blur(4px)) {
   .glass { background: var(--color-panel); }
+}
+
+/* ==================================================================== EMBED ===
+   ?embed=1 — the dashboard running inside the LEADERSHIP section of
+   seasonaledge.ai. The host page already supplies the wordmark, the nav and
+   the section heading, so the brand block comes off and the top padding
+   closes up. The meta row stays (it is the freshness signal) and so does the
+   colophon disclaimer (it has to travel with the numbers).
+   ========================================================================== */
+
+[data-embed] .masthead__brand { display: none; }
+
+[data-embed] .masthead {
+  padding-top: 0;
+  justify-content: flex-start;
+}
+
+[data-embed] .shell {
+  padding-top: 0;
+  padding-bottom: var(--space-6);
+}
+
+/* Inside a frame the page supplies its own ground, so the vignette and the
+   scan line — which key off the viewport edge — are more distraction than
+   depth. The aurora, capital field and spotlight all stay. */
+[data-embed] .fx__vignette,
+[data-embed] .fx__scan { display: none; }
+
+@media (max-width: 760px) {
+  [data-embed] .shell { padding-left: var(--space-4); padding-right: var(--space-4); }
 }

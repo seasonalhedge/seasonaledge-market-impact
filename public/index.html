@@ -5,14 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SeasonalEDGE Market Impact — SPX Leadership Transmission</title>
 <meta name="description" content="How much of today's SPX movement is coming from the MAG7, and whether index leadership is broad or concentrated.">
-<meta name="theme-color" content="#04060a">
+<meta name="theme-color" content="#0B0B0C">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@200;300;400;500;600;800&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="styles.css">
+
+<script>
+/* Embed mode. Set before first paint so the masthead never flashes in and out.
+   ?embed=1 drops the brand block — the host page already carries the wordmark
+   and the section heading — while keeping the live meta row and the
+   disclaimer, both of which have to travel with the data. */
+(function () {
+  try {
+    var embed = new URLSearchParams(location.search).get('embed');
+    if (embed === '1' || embed === 'true') {
+      document.documentElement.setAttribute('data-embed', '');
+    }
+  } catch (err) {
+    /* no URLSearchParams, no embed mode — the full page is a safe default */
+  }
+})();
+</script>
 </head>
 <body>
+
+<!-- ======================================================== THE TURN (logo) -->
+<!-- Master mark per the SeasonalEDGE brand guide. Three paper arcs hold the
+     ring; the fourth crests and leaves as a brass arrow. Never rotated, never
+     closed, brass never used as a fill. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="turn" viewBox="6.58 4.66 86.84 86.84"><path d="M67.000 20.555 A34 34 0 0 1 83.814 46.446" stroke="currentColor" stroke-width="9" fill="none"/><path d="M83.814 53.554 A34 34 0 0 1 53.554 83.814" stroke="currentColor" stroke-width="9" fill="none"/><path d="M46.446 83.814 A34 34 0 0 1 16.186 53.554" stroke="currentColor" stroke-width="9" fill="none"/><path d="M16.186 46.446 A34 34 0 0 1 44.096 16.517" stroke="#B2894A" stroke-width="9" fill="none"/><path d="M60.51 17.66 L39.49 27.66 L42.65 17.66 L39.49 7.66 Z" fill="#B2894A"/></symbol>
+  <symbol id="turn-compact" viewBox="6.58 4.66 86.84 86.84"><path d="M73.618 25.542 A34 34 0 1 1 16.331 54.732" stroke="currentColor" stroke-width="14" fill="none"/><path d="M17.317 40.628 A34 34 0 0 1 37.263 18.476" stroke="#B2894A" stroke-width="14" fill="none"/><path d="M65.96 19.98 L34.04 35.48 L38.83 19.98 L34.04 4.48 Z" fill="#B2894A"/></symbol>
+  <symbol id="turn-mono" viewBox="6.58 4.66 86.84 86.84"><path d="M67.000 20.555 A34 34 0 0 1 83.814 46.446" stroke="currentColor" stroke-width="9" fill="none" opacity=".45"/><path d="M83.814 53.554 A34 34 0 0 1 53.554 83.814" stroke="currentColor" stroke-width="9" fill="none" opacity=".45"/><path d="M46.446 83.814 A34 34 0 0 1 16.186 53.554" stroke="currentColor" stroke-width="9" fill="none" opacity=".45"/><path d="M16.186 46.446 A34 34 0 0 1 44.096 16.517" stroke="currentColor" stroke-width="9" fill="none"/><path d="M60.51 17.66 L39.49 27.66 L42.65 17.66 L39.49 7.66 Z" fill="currentColor"/></symbol>
+</svg>
 
 <a class="skip-link" href="#main">Skip to content</a>
 
@@ -34,8 +61,8 @@
 <header class="masthead" role="banner" data-depth="0.6">
   <div class="masthead__brand">
     <p class="masthead__wordmark">
-      <span class="masthead__mark" aria-hidden="true"></span>
-      SeasonalEDGE <em>Market Impact</em>
+      <svg class="masthead__mark" width="30" height="30" aria-hidden="true"><use href="#turn" width="30" height="30"/></svg>
+      <b>Seasonal<i>EDGE</i></b> <em>Market Impact</em>
     </p>
     <h1 class="masthead__title">SPX Leadership Transmission</h1>
   </div>
