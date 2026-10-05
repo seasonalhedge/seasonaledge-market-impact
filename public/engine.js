@@ -165,11 +165,15 @@
       if (n) found.push(n);
     }
 
-    // The MAG7 bar segment is always a sink while it has width.
-    var seg = document.getElementById('seg-mag7');
-    if (seg && seg.offsetWidth > 24) {
-      var s = rectToNode(seg, 1);
-      if (s) found.push(s);
+    // The MAG7 arc of the attribution ring is always a sink while it carries
+    // share. It is an SVG element, so read its painted extent, not offsetWidth.
+    var arc = document.querySelector('[data-node="mag7"]');
+    if (arc) {
+      var dash = String(arc.getAttribute('stroke-dasharray') || '0').split(/[ ,]+/)[0];
+      if (parseFloat(dash) > 2) {
+        var s = rectToNode(arc, 1);
+        if (s) found.push(s);
+      }
     }
 
     var heroEl = document.querySelector('[data-node="core"]');
