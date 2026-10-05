@@ -96,8 +96,9 @@ Transmission and breadth states are taken from the webhook when supplied and der
 Breadth: 7 `EXPANSIVE` · 5–6 `STRONG` · 3–4 `MODERATE` · 2 `WEAK` · 0–1 `CRITICAL`.
 `LEADER` and `ACCUM` count as positive leadership.
 
-Data status: `LIVE` within 10 minutes of the last accepted webhook during the regular session,
-`DELAYED` within 45, `STALE` beyond that, `CLOSED` outside 09:30–16:00 America/New_York.
+Data status for the daily engine: `CONFIRMED` while the latest reading reflects the most recent
+16:00 ET close, `STALE` once a close passes without one. Intraday timeframes use `LIVE` (10 min),
+`DELAYED` (45 min), `STALE`, and `CLOSED` outside 09:30–16:00 America/New_York.
 
 ## Files
 
@@ -106,7 +107,7 @@ server.js                    HTTP surface, auth, SSE, static host
 lib/normalize.js             validation, aliasing, attribution math, state derivation
 lib/store.js                 SQLite backend with atomic-JSON fallback
 lib/constants.js             universe, thresholds, session hours
-public/index.html            semantic markup, five tabbed views
+public/index.html            semantic markup, five tabbed views (Impact, Internals, Constituents, Timeline, Data)
 public/styles.css            all design tokens in :root — rebrand by editing that block only
 public/app.js                rendering + digit roll; textContent only, innerHTML never used with data
 public/engine.js             canvas capital-flow engine, breath pulse, spotlight, parallax
@@ -116,71 +117,44 @@ test/payloads.js             sample snapshot + event payloads
 test/build-preview.js        single-file static preview builder
 ```
 
-## Design system
+## Design system (v2)
 
-Lifted from the **SeasonalEDGE Command Core** dashboard
-(`seasonalhedge.github.io/seasonaledge-data`), not re-invented. Token names match the
-Command Core so the two surfaces stay in sync — change a value there and the same name
-carries here.
+Built to the **SeasonalEDGE Portfolio Solutions v11 HTML & Brand Guide**. Every colour lives in
+the `:root` block of `public/styles.css`; nothing below it hard-codes one.
 
-| Command Core token | Value | Role |
+| Token | Value | Role |
 | --- | --- | --- |
-| `--paper` / `-2` / `-3` | `#04060a` `#080b11` `#0c1018` | field, panel, panel base |
-| `--ink` / `-2` / `-3` | `#ecf1f7` `#99a8bc` `#4f5d74` | primary, secondary, label ink |
-| `--rule` / `-2` | `rgb(153 168 188 / .13)` / `.24` | hairlines, panel borders |
-| `--on` | `#4dffb8` mint | positive |
-| `--neu` | `#ffb534` amber | neutral |
-| `--off` | `#ff4d7a` rose | negative |
-| `--info` | `#6bb7ff` blue | informational |
-| `--spx` | `#ff8a4c` orange | SPX |
+| `--ob` / `--panel` / `--panel-2` | `#0B0B0C` `#121214` `#171719` | ground, panels |
+| `--paper` / `--graphite` | `#F6F4EF` `#77787C` | primary and secondary ink |
+| `--brass` | `#B2894A` | The Turn, active tab, focus ring — never a fill or background |
+| `--spring` `--summer` `--fall` `--winter` | `#4ADE80` `#EAB308` `#F97316` `#60A5FA` | state encoding |
 
-Type is the Command Core trio: **Fraunces** italic for categorical readings (transmission
-state, breadth count) — the signature move from the regime orb and signal grid; **Space
-Grotesk** for prose; **JetBrains Mono** for every figure, at the Command Core's label
-tracking of `.22em` uppercase.
+Type is **Archivo** (200 for the verdict and readouts, 300–500 for structure) and **IBM Plex Mono**
+for every figure and label. MAG7 is the subject of the page and takes winter blue; the other 493
+take plain paper, because they are the context, not a warning. Constituent states use the same
+colours as the TradingView panel: Leader green, Accumulation blue, Distribution orange, Funding red.
 
-Panels use the Command Core node recipe: `linear-gradient(180deg, --paper-2, --paper-3)`,
-`1px solid --rule-2`, 13px radius, `backdrop-filter: blur(14px) saturate(1.1)`,
-`0 18px 50px rgb(0 0 0 / .5)`. The aurora blob field, 60px substrate grid, CRT scanline
-overlay and blue/mint cursor spotlight are carried over verbatim.
+**Views.** *Impact* — the verdict sentence, an attribution ring built on The Turn's geometry,
+headline-versus-internals confirmation, the seven as a hairline tile grid with an entering/leaving
+flow summary, the transmission scale, and a three-part plain-English reading. *Internals* — six
+0–100 instruments with the engine's own decision bands shaded, leadership dynamics, tripwires and
+the 493 confirmation detail. *Constituents* — sortable table with inline score and delta bars.
+*Timeline* — every engine event in client language, grouped by session. *Data* — the normalized
+JSON and the read-only API.
 
-**Semantic mapping.** MAG7 is the subject of this page, so it takes `--info` blue; the rest
-of the index takes the Command Core's own `--spx` orange. That reads correctly in the
-attribution bar without inventing a colour: blue is the thing being measured, orange is the
-index it sits inside.
+**Partial data is a first-class state.** Ordinary engine alerts carry the MAG7 impact share and
+contribution but not the SPY return. The page leads with the engine's share and says plainly which
+figures the latest alert did not carry, rather than blanking the headline until a snapshot lands.
+With no data at all it says it is awaiting the first reading and when the next one is due.
 
-| Dashboard state | Token |
-| --- | --- |
-| LEADER · DRIVING · BROAD | `--on` |
-| ACCUMULATION · HEALTHY | `--on` mixed toward `--ink-2` |
-| NEUTRAL | `--ink-2` |
-| DISTRIBUTION · CONCENTRATED | `--neu` |
-| FRAGILE | `--spx` |
-| FUNDING · OFFSETTING · BROKEN | `--off` |
+`engine.js` runs four systems on one rAF loop — capital particles that pool at healthy leaders and
+the ring's MAG7 arc, a breathing scoring pulse, a cursor spotlight, and depth parallax. It reads its
+colours from the stylesheet at boot, stops on hidden tabs, and switches off entirely under
+`prefers-reduced-motion`. Numbers roll only when data changes; only the clocks tick on their own.
 
-All tokens live in the `:root` block of `styles.css`. Nothing below that block hard-codes a
-value, so a rebrand is one edit.
-
-`engine.js` runs four systems on a single rAF loop:
-
-| System | What it shows |
-| --- | --- |
-| Capital | `--info` blue particles enter from the market edge, route through the substrate and **pool at the nodes currently holding healthy leadership**. Flow volume tracks the MAG7 impact share; a dimmer `--spx` orange slice never pools — that's the residual. With zero healthy leaders, capital pools at the core instead: the index has nowhere to route. |
-| Breath | A scoring sweep from the hero core, faster as concentration rises, plus halo respiration at each active node. Fires immediately whenever new data lands. |
-| Spotlight | Pointer position published as CSS variables; the stylesheet reveals the substrate grid and moves a specular highlight across whichever glass panel is under the cursor. |
-| Parallax | `[data-depth]` elements translate and rotate against pointer travel, layered front to back. |
-
-Performance and restraint: particle budget scales with viewport area and flow intensity
-(28–190), device pixel ratio caps at 2, glow is a cached sprite drawn with `lighter` rather than
-per-particle `shadowBlur`, the loop stops entirely on a hidden tab, and `prefers-reduced-motion`
-disables the canvas and every animation. The canvas is `aria-hidden` and carries no information
-that isn't already in the DOM.
-
-**Numbers roll only when data changes.** Each digit is a column that turns a full revolution into
-its new value, staggered left to right, with a brief blue print-flash. Nothing is simulated
-between updates — the only thing that ticks on its own is the session clock, because time
-genuinely passes. The rolling columns contain every digit 0–9, so they are `aria-hidden` and the
-real value is exposed to screen readers separately.
+**Embedding.** `?embed=1` drops the brand block for use inside seasonaledge.ai. When framed, the
+page posts `{ type: 'se-impact-height' }` with its content height to the seasonaledge.ai origins
+only, so the host iframe can size itself.
 
 ## Security notes
 
